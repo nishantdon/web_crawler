@@ -23,12 +23,15 @@ function crawlWebApp(urls, currentDepth, finalDepth) {
         // Get all Images for all the promies and write those into file with depth
         // get next set of Urls 
         // again make call to this function with reduced depth
-        const imagesAndUrls = getImagesAndUrls(reponses)
-        const rawImageObjects = imagesAndUrls.map((imagesAndUrl) => imagesAndUrl[0])
-        const images = formatResultObject(rawImageObjects, currentDepth);
-        readAndWriteFiles(images).then((fileResponse) => {
-            crawlWebApp(urls, currentDepth, finalDepth);
-        });
+        let imagesAndUrls = getImagesAndUrls(reponses)
+        imagesAndUrls = imagesAndUrls.filter((res) => res !== undefined)
+        if(imagesAndUrls.length > 0) {
+            const rawImageObjects = imagesAndUrls.map((imagesAndUrl) => imagesAndUrl[0])
+            const images = formatResultObject(rawImageObjects, currentDepth);
+            readAndWriteFiles(images).then((fileResponse) => {
+                crawlWebApp(urls, currentDepth, finalDepth);
+            });
+        }       
     })
 }
 
@@ -60,7 +63,6 @@ function getImagesAndUrls(responses) {
             const images = getImageByScrapping($, response.value.config.url);
             const urls = getUrlsForFurtherScrapping($,response.value.config.url);
             return [images.map((image) => ({imageUrl: image, sourceUrl: response.value.config.url})) ,urls]
-            // Make API call to new Urls
         }
     })
 }
@@ -79,8 +81,6 @@ function getUrlsForFurtherScrapping($, baseUrl) {
     return [...herfs];
 }
 function getImageByScrapping($) {
-    // TODO Load this once 
-    
     const images = new Set();
      $('img').map((i, el) => {
         images.add(el.attribs.src);
