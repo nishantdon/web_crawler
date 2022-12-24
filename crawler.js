@@ -23,8 +23,6 @@ function crawlWebApp(urls, currentDepth, finalDepth) {
         // Get all Images for all the promies and write those into file with depth
         // get next set of Urls 
         // again make call to this function with reduced depth
-        
-
         const imagesAndUrls = getImagesAndUrls(reponses)
         const rawImageObjects = imagesAndUrls.map((imagesAndUrl) => imagesAndUrl[0])
         const images = formatResultObject(rawImageObjects, currentDepth);
@@ -60,9 +58,8 @@ function getImagesAndUrls(responses) {
         if (response.value && response.value.status === 200) {
             const $ = cheerio.load(response.value.data);
             const images = getImageByScrapping($, response.value.config.url);
-            // Write files 
-            const urls = getUrlsForFurtherScrapping($);
-            return [images.map((image) => ({image, url: response.value.config.url})) ,urls]
+            const urls = getUrlsForFurtherScrapping($,response.value.config.url);
+            return [images.map((image) => ({imageUrl: image, sourceUrl: response.value.config.url})) ,urls]
             // Make API call to new Urls
         }
     })
@@ -75,6 +72,8 @@ function getUrlsForFurtherScrapping($, baseUrl) {
         // TODO handle relative links as well and repeated links as well
         if(el.attribs.href.startsWith('https://')) {
             herfs.add(el.attribs.href);
+        } else {
+            herfs.add(`${baseUrl}${el.attribs.href}`)
         }
     });
     return [...herfs];
@@ -91,7 +90,3 @@ function getImageByScrapping($) {
 
 
 crawlWebApp([crawlUrl],-1,depth);
-
-/**
- fisrt call -> get all URls get all image files write it into file -> Make second level API call parellel -> Store there response -> get Third level API.....
- */
